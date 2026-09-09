@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#111822" />
+  <meta name="description" content="Nexo, seu espaço de conversa com inteligência artificial." />
+  <title>Nexo — Conversas que avançam</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar" id="sidebar">
+      <div class="brand-lockup">
+        <span class="brand-mark" aria-hidden="true"><span></span><span></span><span></span></span>
+        <span class="brand-name">nexo</span>
+      </div>
+
+      <button class="new-chat-button" id="newChatButton" type="button">
+        <span class="plus-icon" aria-hidden="true">+</span>
+        <span>Nova conversa</span>
+        <kbd>⌘ K</kbd>
+      </button>
+
+      <div class="history-heading">
+        <span>Conversas recentes</span>
+        <span class="history-count" id="historyCount">0</span>
+      </div>
+      <nav class="conversation-list" id="conversationList" aria-label="Conversas recentes"></nav>
+
+      <div class="sidebar-footer">
+        <div class="status-pill"><span class="status-dot"></span><span>Orquestra online</span></div>
+        <div class="model-label"><span>MODELO</span><strong>gpt-oss · Groq</strong></div>
+      </div>
+    </aside>
+
+    <main class="chat-area">
+      <header class="topbar">
+        <button class="icon-button menu-button" id="menuButton" type="button" aria-label="Abrir menu"><span></span><span></span></button>
+        <div class="current-chat-info">
+          <span class="eyebrow">ESPAÇO DE TRABALHO</span>
+          <h1 id="conversationTitle">Nova conversa</h1>
+        </div>
+        <div class="topbar-actions">
+          <button class="icon-button" id="clearButton" type="button" aria-label="Limpar conversa" title="Limpar conversa">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3" /></svg>
+          </button>
+          <div class="avatar" aria-label="Perfil">VC</div>
+        </div>
+      </header>
+
+      <section class="message-viewport" id="messageViewport">
+        <div class="welcome-state" id="welcomeState">
+          <div class="signal-orbit" aria-hidden="true"><span></span><i></i></div>
+          <p class="eyebrow">PRESENÇA DIGITAL</p>
+          <h2>O próximo passo<br /><em>começa aqui.</em></h2>
+          <p class="welcome-copy">Uma inteligência para organizar ideias, destravar decisões e dar forma ao que ainda está nas entrelinhas.</p>
+          <div class="prompt-grid">
+            <button class="prompt-card" type="button" data-prompt="Me ajude a organizar uma ideia que está confusa">
+              <span>01</span><strong>Organizar uma ideia</strong><small>Dar clareza ao que está solto</small><b>↗</b>
+            </button>
+            <button class="prompt-card" type="button" data-prompt="Crie um plano prático para minha próxima semana">
+              <span>02</span><strong>Criar um plano</strong><small>Transformar intenção em ação</small><b>↗</b>
+            </button>
+            <button class="prompt-card" type="button" data-prompt="Faça uma análise crítica deste problema: ">
+              <span>03</span><strong>Pensar melhor</strong><small>Enxergar ângulos diferentes</small><b>↗</b>
+            </button>
+          </div>
+        </div>
+        <div class="messages" id="messages" aria-live="polite"></div>
+      </section>
+
+      <footer class="composer-wrap">
+        <form class="composer" id="composerForm">
+          <textarea id="messageInput" rows="1" placeholder="Escreva o que está pensando..." aria-label="Mensagem"></textarea>
+          <div class="composer-tools">
+            <span class="composer-hint">Enter para enviar · Shift + Enter para nova linha</span>
+            <button class="send-button" id="sendButton" type="submit" aria-label="Enviar mensagem"><span>Enviar</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 14-7-4 14-3.5-6.5L5 12Z" /><path d="M11.5 12.5 19 5" /></svg></button>
+          </div>
+        </form>
+        <p class="privacy-note"><span class="lock-icon">⌁</span> Suas conversas ficam salvas neste espaço privado.</p>
+      </footer>
+    </main>
+  </div>
+  <div class="toast" id="toast" role="status"></div>
+  <script src="app.js"></script>
+</body>
+</html>

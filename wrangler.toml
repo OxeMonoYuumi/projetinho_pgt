@@ -1,0 +1,6 @@
+name = "nexo-chat"
+compatibility_date = "2026-09-09"
+pages_build_output_dir = "."
+
+[vars]
+GROQ_MODEL = "openai/gpt-oss-20b"

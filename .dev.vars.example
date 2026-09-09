@@ -1,0 +1,4 @@
+SUPABASE_URL=https://seu-projeto.supabase.co
+SUPABASE_SERVICE_ROLE_KEY=cole-sua-chave-service-role
+GROQ_API_KEY=cole-sua-chave-groq
+GROQ_MODEL=openai/gpt-oss-20b
