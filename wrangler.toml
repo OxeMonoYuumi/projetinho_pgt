@@ -3,4 +3,5 @@ compatibility_date = "2026-09-09"
 pages_build_output_dir = "."
 
 [vars]
+SUPABASE_URL = "https://gvdzqkpyksmmutnrossw.supabase.co"
 GROQ_MODEL = "openai/gpt-oss-20b"
