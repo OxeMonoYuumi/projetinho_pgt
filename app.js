@@ -103,6 +103,19 @@ function formatAssistantMessage(value) {
       closeList();
       continue;
     }
+    if (/^\s*([-*_])(?:\s*\1){2,}\s*$/.test(line)) {
+      closeParagraph();
+      closeList();
+      output.push('<hr>');
+      continue;
+    }
+    const quote = line.match(/^\s*>\s?(.*)$/);
+    if (quote) {
+      closeParagraph();
+      closeList();
+      output.push(`<blockquote>${inlineMarkdown(quote[1])}</blockquote>`);
+      continue;
+    }
     const heading = line.match(/^(#{1,3})\s+(.+)$/);
     if (heading) {
       closeParagraph();
@@ -120,7 +133,8 @@ function formatAssistantMessage(value) {
         listType = nextType;
         output.push(`<${listType}>`);
       }
-      output.push(`<li>${inlineMarkdown(item[2])}</li>`);
+      const checked = item[2].match(/^\[([ xX])\]\s+(.+)$/);
+      output.push(`<li${checked ? ' class="task-item"' : ''}>${checked ? `<span class="task-check ${checked[1].toLowerCase() === 'x' ? 'is-checked' : ''}">${checked[1].toLowerCase() === 'x' ? '✓' : ''}</span>${inlineMarkdown(checked[2])}` : inlineMarkdown(item[2])}</li>`);
       continue;
     }
     closeList();
