@@ -64,7 +64,11 @@ function formatAssistantMessage(value) {
     }
   };
 
-  lines.forEach((line) => {
+  const tableCells = (line) => line.trim().replace(/^\|/, '').replace(/\|$/, '').split('|').map((cell) => cell.trim());
+  const isTableSeparator = (line) => tableCells(line).length > 0 && tableCells(line).every((cell) => /^:?-{3,}:?$/.test(cell));
+
+  for (let index = 0; index < lines.length; index += 1) {
+    const line = lines[index];
     const fence = line.match(/^```\s*[\w-]*\s*$/);
     if (fence) {
       closeParagraph();
@@ -75,16 +79,29 @@ function formatAssistantMessage(value) {
         output.push('<pre><code>');
       }
       code = !code;
-      return;
+      continue;
     }
     if (code) {
       output.push(`${line}\n`);
-      return;
+      continue;
+    }
+    if (line.includes('|') && index + 1 < lines.length && isTableSeparator(lines[index + 1])) {
+      closeParagraph();
+      closeList();
+      const header = tableCells(line);
+      index += 1;
+      const rows = [];
+      while (index + 1 < lines.length && lines[index + 1].includes('|') && !isTableSeparator(lines[index + 1])) {
+        index += 1;
+        rows.push(tableCells(lines[index]));
+      }
+      output.push(`<div class="table-scroll"><table><thead><tr>${header.map((cell) => `<th>${inlineMarkdown(cell)}</th>`).join('')}</tr></thead><tbody>${rows.map((row) => `<tr>${header.map((_, cellIndex) => `<td>${inlineMarkdown(row[cellIndex] || '')}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`);
+      continue;
     }
     if (!line.trim()) {
       closeParagraph();
       closeList();
-      return;
+      continue;
     }
     const heading = line.match(/^(#{1,3})\s+(.+)$/);
     if (heading) {
@@ -92,7 +109,7 @@ function formatAssistantMessage(value) {
       closeList();
       const level = heading[1].length + 2;
       output.push(`<h${level}>${inlineMarkdown(heading[2])}</h${level}>`);
-      return;
+      continue;
     }
     const item = line.match(/^\s*([-*]|\d+[.)])\s+(.+)$/);
     if (item) {
@@ -104,11 +121,11 @@ function formatAssistantMessage(value) {
         output.push(`<${listType}>`);
       }
       output.push(`<li>${inlineMarkdown(item[2])}</li>`);
-      return;
+      continue;
     }
     closeList();
     paragraph.push(line);
-  });
+  }
   closeParagraph();
   closeList();
   if (code) output.push('</code></pre>');
