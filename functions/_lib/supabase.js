@@ -13,7 +13,7 @@ export function supabase(env, path, options = {}) {
 
 export async function readJson(response) {
   const body = await response.json().catch(() => null);
-  if (!response.ok) throw new Error(body?.message || 'Erro ao acessar o Supabase.');
+  if (!response.ok) throw new Error(body?.message || body?.hint || `HTTP ${response.status} ao acessar o Supabase.`);
   return body;
 }
 
