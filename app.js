@@ -30,6 +30,91 @@ function escapeHtml(value) {
   return value.replace(/[&<>'"]/g, (character) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[character]));
 }
 
+function inlineMarkdown(value) {
+  const placeholders = [];
+  const protect = (html) => {
+    const token = `%%INLINE_${placeholders.length}%%`;
+    placeholders.push(html);
+    return token;
+  };
+  let formatted = value.replace(/`([^`]+)`/g, (_, code) => protect(`<code>${code}</code>`));
+  formatted = formatted.replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g, (_, label, url) => protect(`<a href="${url}" target="_blank" rel="noopener noreferrer">${label}</a>`));
+  formatted = formatted.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>').replace(/__([^_]+)__/g, '<strong>$1</strong>');
+  formatted = formatted.replace(/\*([^*]+)\*/g, '<em>$1</em>').replace(/_([^_]+)_/g, '<em>$1</em>');
+  return formatted.replace(/%%INLINE_(\d+)%%/g, (_, index) => placeholders[index]);
+}
+
+function formatAssistantMessage(value) {
+  const lines = escapeHtml(value).replace(/\r/g, '').split('\n');
+  const output = [];
+  let paragraph = [];
+  let listType = null;
+  let code = false;
+
+  const closeParagraph = () => {
+    if (paragraph.length) {
+      output.push(`<p>${paragraph.map(inlineMarkdown).join('<br>')}</p>`);
+      paragraph = [];
+    }
+  };
+  const closeList = () => {
+    if (listType) {
+      output.push(`</${listType}>`);
+      listType = null;
+    }
+  };
+
+  lines.forEach((line) => {
+    const fence = line.match(/^```\s*[\w-]*\s*$/);
+    if (fence) {
+      closeParagraph();
+      closeList();
+      if (code) {
+        output.push('</code></pre>');
+      } else {
+        output.push('<pre><code>');
+      }
+      code = !code;
+      return;
+    }
+    if (code) {
+      output.push(`${line}\n`);
+      return;
+    }
+    if (!line.trim()) {
+      closeParagraph();
+      closeList();
+      return;
+    }
+    const heading = line.match(/^(#{1,3})\s+(.+)$/);
+    if (heading) {
+      closeParagraph();
+      closeList();
+      const level = heading[1].length + 2;
+      output.push(`<h${level}>${inlineMarkdown(heading[2])}</h${level}>`);
+      return;
+    }
+    const item = line.match(/^\s*([-*]|\d+[.)])\s+(.+)$/);
+    if (item) {
+      closeParagraph();
+      const nextType = /^\d/.test(item[1]) ? 'ol' : 'ul';
+      if (listType !== nextType) {
+        closeList();
+        listType = nextType;
+        output.push(`<${listType}>`);
+      }
+      output.push(`<li>${inlineMarkdown(item[2])}</li>`);
+      return;
+    }
+    closeList();
+    paragraph.push(line);
+  });
+  closeParagraph();
+  closeList();
+  if (code) output.push('</code></pre>');
+  return output.join('');
+}
+
 function renderConversations() {
   elements.count.textContent = state.conversations.length;
   if (!state.conversations.length) {
@@ -48,7 +133,8 @@ function addMessage(role, content, pending = false) {
   elements.welcome.hidden = true;
   const message = document.createElement('article');
   message.className = `message ${role}`;
-  message.innerHTML = `<div class="message-avatar">${role === 'user' ? 'VC' : 'N'}</div><div class="message-body"><div class="message-role">${role === 'user' ? 'Você' : 'Nexo'}</div><div class="message-content">${pending ? '<span class="typing-dots"><i></i><i></i><i></i></span>' : escapeHtml(content)}</div></div>`;
+  const formattedContent = role === 'assistant' ? formatAssistantMessage(content) : escapeHtml(content).replace(/\n/g, '<br>');
+  message.innerHTML = `<div class="message-avatar">${role === 'user' ? 'VC' : 'N'}</div><div class="message-body"><div class="message-role">${role === 'user' ? 'Você' : 'Nexo'}</div><div class="message-content">${pending ? '<span class="typing-dots"><i></i><i></i><i></i></span>' : formattedContent}</div></div>`;
   elements.messages.appendChild(message);
   elements.messages.parentElement.scrollTo({ top: elements.messages.parentElement.scrollHeight, behavior: 'smooth' });
   return message;
